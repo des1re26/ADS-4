@@ -27,26 +27,25 @@ int countPairs2(int *arr, int len, int value) {
             int left_val = arr[left];
             int right_val = arr[right];
 
-            int left_count = 0;
-            int i = left;
-            while (i <= right && arr[i] == left_val) {
-                left_count++;
-                i++;
-            }
-
-            int right_count = 0;
-            int j = right;
-            while (j >= left && arr[j] == right_val) {
-                right_count++;
-                j--;
-            }
-
             if (left_val == right_val) {
-                count += (left_count * (left_count - 1)) / 2;
-            } else {
-                count += left_count * right_count;
+                int n = right - left + 1;
+                count += n * (n - 1) / 2;
+                break;
             }
 
+            int left_count = 1;
+            while (left + left_count < len && left + left_count <= right &&
+                   arr[left + left_count] == left_val) {
+                left_count++;
+            }
+
+            int right_count = 1;
+            while (right - right_count >= 0 && right - right_count >= left &&
+                   arr[right - right_count] == right_val) {
+                right_count++;
+            }
+
+            count += left_count * right_count;
             left += left_count;
             right -= right_count;
         } else if (sum < value) {
@@ -58,51 +57,59 @@ int countPairs2(int *arr, int len, int value) {
     return count;
 }
 
+// Вспомогательная функция для бинарного поиска
+int binarySearchCount(int *arr, int start, int end, int target) {
+    // Находим первое вхождение
+    int first = -1;
+    int left = start;
+    int right = end;
+    while (left <= right) {
+        int mid = left + (right - left) / 2;
+        if (arr[mid] == target) {
+            first = mid;
+            right = mid - 1;
+        } else if (arr[mid] < target) {
+            left = mid + 1;
+        } else {
+            right = mid - 1;
+        }
+    }
+
+    if (first == -1) return 0;
+
+    // Находим последнее вхождение
+    int last = first;
+    left = first;
+    right = end;
+    while (left <= right) {
+        int mid = left + (right - left) / 2;
+        if (arr[mid] == target) {
+            last = mid;
+            left = mid + 1;
+        } else if (arr[mid] < target) {
+            left = mid + 1;
+        } else {
+            right = mid - 1;
+        }
+    }
+
+    return last - first + 1;
+}
+
 // Функция 3: Бинарный поиск - O(n log n)
 int countPairs3(int *arr, int len, int value) {
     int count = 0;
+    int i = 0;
 
-    for (int i = 0; i < len; ++i) {
+    while (i < len) {
         int target = value - arr[i];
+        int cnt = binarySearchCount(arr, i + 1, len - 1, target);
+        count += cnt;
 
-        int left = i + 1;
-        int right = len - 1;
-        int first = -1;
-
-        while (left <= right) {
-            int mid = left + (right - left) / 2;
-            if (arr[mid] == target) {
-                first = mid;
-                right = mid - 1;
-            } else if (arr[mid] < target) {
-                left = mid + 1;
-            } else {
-                right = mid - 1;
-            }
-        }
-
-        if (first != -1) {
-            left = first;
-            right = len - 1;
-            int last = first;
-
-            while (left <= right) {
-                int mid = left + (right - left) / 2;
-                if (arr[mid] == target) {
-                    last = mid;
-                    left = mid + 1;
-                } else if (arr[mid] < target) {
-                    left = mid + 1;
-                } else {
-                    right = mid - 1;
-                }
-            }
-
-            count += (last - first + 1);
-        }
-
-        while (i + 1 < len && arr[i] == arr[i + 1]) {
-            ++i;
+        // Пропускаем дубликаты
+        int current = arr[i];
+        while (i < len && arr[i] == current) {
+            i++;
         }
     }
 
