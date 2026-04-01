@@ -1,4 +1,4 @@
-// Copyright 2021 NNTU-CS
+// Copyright 2025 NNTU-CS
 #include <cstdint>
 #include "alg.h"
 
@@ -18,7 +18,7 @@ int countPairs2(int *arr, int len, int value) {
     int count = 0;
     int left = 0;
     int right = len - 1;
-
+    
     while (left < right) {
         int sum = arr[left] + arr[right];
         if (sum == value) {
@@ -71,31 +71,32 @@ int countPairs3(int *arr, int len, int value) {
         if (target < arr[i]) {
             continue;
         }
-        int pos = binarySearch(arr, i + 1, len - 1, target);
-        if (pos != -1) {
+        int firstPos = binarySearch(arr, i + 1, len - 1, target);
+        if (firstPos != -1) {
+            int lastPos = firstPos;
+            while (lastPos + 1 < len && arr[lastPos + 1] == target) {
+                lastPos++;
+            }
+            int firstPosLeft = firstPos;
+            while (firstPosLeft - 1 > i && arr[firstPosLeft - 1] == target) {
+                firstPosLeft--;
+            }
+            int countTarget = lastPos - firstPosLeft + 1;
+            
             if (arr[i] == target) {
-                int j = pos;
-                while (j < len && arr[j] == target) {
-                    count++;
-                    j++;
-                }
-            } else {
-                int leftCount = 1;
-                int rightCount = 1;
-                while (i + 1 < len && arr[i] == arr[i + 1]) {
-                    leftCount++;
+                int countCurrent = 1;
+                while (i + 1 < len && arr[i + 1] == arr[i]) {
+                    countCurrent++;
                     i++;
                 }
-                int tempPos = pos;
-                while (tempPos - 1 >= 0 && arr[tempPos - 1] == target) {
-                    rightCount++;
-                    tempPos--;
+                count += countCurrent * (countCurrent - 1) / 2;
+            } else {
+                int countCurrent = 1;
+                while (i + 1 < len && arr[i + 1] == arr[i]) {
+                    countCurrent++;
+                    i++;
                 }
-                while (pos + 1 < len && arr[pos + 1] == target) {
-                    rightCount++;
-                    pos++;
-                }
-                count += leftCount * rightCount;
+                count += countCurrent * countTarget;
             }
         }
     }
