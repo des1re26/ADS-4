@@ -1,6 +1,8 @@
+// Copyright 2026 <Student Name>
 
+#include "alg.h"
 
-// Функция 1: Полный перебор (цикл в цикле)
+// Функция 1: Полный перебор (цикл в цикле) - O(n^2)
 int countPairs1(int *arr, int len, int value) {
     int count = 0;
     for (int i = 0; i < len; ++i) {
@@ -13,46 +15,40 @@ int countPairs1(int *arr, int len, int value) {
     return count;
 }
 
-// Функция 2: Движение с двух концов навстречу (метод двух указателей)
+// Функция 2: Движение с двух концов навстречу - O(n)
 int countPairs2(int *arr, int len, int value) {
     int count = 0;
     int left = 0;
     int right = len - 1;
-
+    
     while (left < right) {
-        int current_sum = arr[left] + arr[right];
-        if (current_sum == value) {
-            // Подсчет всех возможных пар с одинаковым левым значением
-            int left_val = arr[left];
-            int right_val = arr[right];
-            
-            // Если значения одинаковы, то количество пар = C(n, 2)
-            if (left_val == right_val) {
+        int sum = arr[left] + arr[right];
+        if (sum == value) {
+            if (arr[left] == arr[right]) {
+                // Если элементы одинаковы, то все пары между left и right
                 int n = right - left + 1;
                 count += n * (n - 1) / 2;
                 break;
+            } else {
+                // Подсчитываем количество одинаковых элементов слева
+                int left_val = arr[left];
+                int left_count = 0;
+                while (left <= right && arr[left] == left_val) {
+                    ++left_count;
+                    ++left;
+                }
+                
+                // Подсчитываем количество одинаковых элементов справа
+                int right_val = arr[right];
+                int right_count = 0;
+                while (left <= right && arr[right] == right_val) {
+                    ++right_count;
+                    --right;
+                }
+                
+                count += left_count * right_count;
             }
-            
-            // Подсчет количества одинаковых элементов слева
-            int left_count = 1;
-            while (left + 1 < right && arr[left + 1] == left_val) {
-                ++left_count;
-                ++left;
-            }
-            
-            // Подсчет количества одинаковых элементов справа
-            int right_count = 1;
-            while (right - 1 > left && arr[right - 1] == right_val) {
-                ++right_count;
-                --right;
-            }
-            
-            // Добавляем количество комбинаций: left_count * right_count
-            count += left_count * right_count;
-            
-            ++left;
-            --right;
-        } else if (current_sum < value) {
+        } else if (sum < value) {
             ++left;
         } else {
             --right;
@@ -61,34 +57,33 @@ int countPairs2(int *arr, int len, int value) {
     return count;
 }
 
-// Функция 3: Бинарный поиск для второго элемента
-int binarySearch(int *arr, int left, int right, int target) {
-    while (left <= right) {
-        int mid = left + (right - left) / 2;
+// Вспомогательная функция для бинарного поиска
+int binarySearch(int *arr, int start, int end, int target) {
+    while (start <= end) {
+        int mid = start + (end - start) / 2;
         if (arr[mid] == target) {
-            // Находим первое вхождение target
-            int first = mid;
-            while (first > left && arr[first - 1] == target) {
-                --first;
+            // Находим первое вхождение
+            while (mid > start && arr[mid - 1] == target) {
+                --mid;
             }
-            return first;
+            return mid;
         } else if (arr[mid] < target) {
-            left = mid + 1;
+            start = mid + 1;
         } else {
-            right = mid - 1;
+            end = mid - 1;
         }
     }
     return -1;
 }
 
+// Функция 3: Бинарный поиск - O(n log n)
 int countPairs3(int *arr, int len, int value) {
     int count = 0;
     for (int i = 0; i < len - 1; ++i) {
         int target = value - arr[i];
-        // Ищем target в подмассиве arr[i+1 .. len-1]
         int first_pos = binarySearch(arr, i + 1, len - 1, target);
         if (first_pos != -1) {
-            // Нашли первое вхождение target, считаем сколько их всего
+            // Подсчитываем все вхождения target
             int j = first_pos;
             while (j < len && arr[j] == target) {
                 ++count;
