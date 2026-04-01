@@ -71,7 +71,9 @@ int countPairs3(int *arr, int len, int value) {
         if (target < arr[i]) {
             continue;
         }
-        int pos = binarySearch(arr, i + 1, len - 1, target);
+        int left = i + 1;
+        int right = len - 1;
+        int pos = binarySearch(arr, left, right, target);
         if (pos != -1) {
             if (arr[i] == target) {
                 int cnt = 1;
@@ -85,8 +87,12 @@ int countPairs3(int *arr, int len, int value) {
                 while (i + cntLeft < len && arr[i + cntLeft] == arr[i]) {
                     cntLeft++;
                 }
-                int cntRight = 1;
-                while (pos + cntRight < len && arr[pos + cntRight] == target) {
+                int firstPos = pos;
+                while (firstPos - 1 >= 0 && arr[firstPos - 1] == target) {
+                    firstPos--;
+                }
+                int cntRight = 0;
+                while (firstPos + cntRight < len && arr[firstPos + cntRight] == target) {
                     cntRight++;
                 }
                 count += cntLeft * cntRight;
