@@ -23,56 +23,59 @@ int countPairs2(int *arr, int len, int value) {
 
     while (left < right) {
         int sum = arr[left] + arr[right];
-
         if (sum == value) {
-            if (arr[left] == arr[right]) {
-                // Если элементы одинаковы, то все пары между left и right
+            // Нашли пару, теперь считаем все комбинации
+            int left_val = arr[left];
+            int right_val = arr[right];
+
+            if (left_val == right_val) {
+                // Если значения равны, то все элементы между left и right дают пары
                 int n = right - left + 1;
                 count += n * (n - 1) / 2;
                 break;
             } else {
-                // Подсчитываем количество одинаковых элементов слева
-                int left_val = arr[left];
+                // Считаем количество одинаковых элементов слева
                 int left_count = 0;
-                while (left <= right && arr[left] == left_val) {
-                    ++left_count;
-                    ++left;
+                int temp_left = left;
+                while (temp_left <= right && arr[temp_left] == left_val) {
+                    left_count++;
+                    temp_left++;
                 }
 
-                // Подсчитываем количество одинаковых элементов справа
-                int right_val = arr[right];
+                // Считаем количество одинаковых элементов справа
                 int right_count = 0;
-                while (left <= right && arr[right] == right_val) {
-                    ++right_count;
-                    --right;
+                int temp_right = right;
+                while (temp_right >= left && arr[temp_right] == right_val) {
+                    right_count++;
+                    temp_right--;
                 }
 
                 count += left_count * right_count;
+                left += left_count;
+                right -= right_count;
             }
         } else if (sum < value) {
-            ++left;
+            left++;
         } else {
-            --right;
+            right--;
         }
     }
     return count;
 }
 
-// Вспомогательная функция для бинарного поиска
-int binarySearchFirst(int *arr, int start, int end, int target) {
-    int result = -1;
-    while (start <= end) {
-        int mid = start + (end - start) / 2;
+// Вспомогательная функция бинарного поиска
+int binarySearch(int *arr, int left, int right, int target) {
+    while (left <= right) {
+        int mid = left + (right - left) / 2;
         if (arr[mid] == target) {
-            result = mid;
-            end = mid - 1;  // Ищем первое вхождение
+            return mid;
         } else if (arr[mid] < target) {
-            start = mid + 1;
+            left = mid + 1;
         } else {
-            end = mid - 1;
+            right = mid - 1;
         }
     }
-    return result;
+    return -1;
 }
 
 // Функция 3: Бинарный поиск - O(n log n)
@@ -81,22 +84,33 @@ int countPairs3(int *arr, int len, int value) {
 
     for (int i = 0; i < len; ++i) {
         int target = value - arr[i];
-        // Ищем первое вхождение target в подмассиве после i
-        int first_pos = binarySearchFirst(arr, i + 1, len - 1, target);
+        // Ищем target в оставшейся части массива
+        int pos = binarySearch(arr, i + 1, len - 1, target);
 
-        if (first_pos != -1) {
-            // Нашли первое вхождение, считаем все вхождения target
-            int j = first_pos;
-            while (j < len && arr[j] == target) {
-                ++count;
-                ++j;
+        if (pos != -1) {
+            // Нашли target, считаем все его вхождения
+            int first = pos;
+            int last = pos;
+
+            // Ищем первое вхождение
+            while (first > i + 1 && arr[first - 1] == target) {
+                first--;
             }
+
+            // Ищем последнее вхождение
+            while (last < len - 1 && arr[last + 1] == target) {
+                last++;
+            }
+
+            // Добавляем количество вхождений
+            count += (last - first + 1);
         }
 
-        // Пропускаем дубликаты текущего элемента
+        // Пропускаем дубликаты arr[i]
         while (i + 1 < len && arr[i] == arr[i + 1]) {
-            ++i;
+            i++;
         }
     }
+
     return count;
 }
